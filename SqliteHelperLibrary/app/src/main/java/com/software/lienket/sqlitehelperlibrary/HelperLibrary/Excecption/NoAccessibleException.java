@@ -6,6 +6,6 @@ package com.software.lienket.sqlitehelperlibrary.HelperLibrary.Excecption;
 
 public class NoAccessibleException extends RuntimeException {
     public NoAccessibleException() {
-        super("Cannot get value from entity. Please provide getter and setter method");
+        super("Cannot get value from entity or value is null");
     }
 }

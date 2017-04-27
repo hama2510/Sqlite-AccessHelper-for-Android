@@ -76,8 +76,8 @@ public class EntityUtil<T> {
     }
 
     private EntityColumn getColumn(T obj, Field f) {
-        EntityColumn column = new EntityColumn();
         if (f.isAnnotationPresent(Column.class)) {
+            EntityColumn column = new EntityColumn();
             column.setName(f.getAnnotation(Column.class).name());
             column.setDataType(f.getType());
             column.setFieldType(f.getAnnotation(Column.class).fieldType());
@@ -93,29 +93,39 @@ public class EntityUtil<T> {
                 f.setAccessible(true);
                 try {
                     column.setValue(f.get(obj));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
                     throw new NoAccessibleException();
                 }
             }
+            return column;
         }
-        return column;
+        return null;
     }
 
     private ArrayList<EntityColumn> getColumnsInfo(Class clazz) {
         ArrayList<EntityColumn> columns = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
+        EntityColumn column = null;
         for (Field f : fields) {
-            columns.add(getColumn(null, f));
+            column = getColumn(null, f);
+            if (column != null)
+                columns.add(column);
+            else
+                throw new NotEntityException(clazz.getName() + ". Missing column annotation");
         }
         return columns;
     }
 
     private ArrayList<EntityColumn> getColumnsInfo(T obj) {
+        EntityColumn column = null;
         ArrayList<EntityColumn> columns = new ArrayList<>();
         Field[] fields = obj.getClass().getDeclaredFields();
         for (Field f : fields) {
-            columns.add(getColumn(obj, f));
+            column = getColumn(obj, f);
+            if (column != null)
+                columns.add(column);
+            else
+                throw new NotEntityException(obj.getClass().getName());
         }
         return columns;
     }

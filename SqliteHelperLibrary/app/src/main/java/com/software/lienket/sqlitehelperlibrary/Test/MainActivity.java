@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.DataAccessObject;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Query;
+import com.software.lienket.sqlitehelperlibrary.Test.Entity.Abc;
 import com.software.lienket.sqlitehelperlibrary.Test.Entity.Order;
 import com.software.lienket.sqlitehelperlibrary.Test.Entity.OrderDetail;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.DatabaseConnection;
@@ -24,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         DatabaseConnection.init(this);
-        DatabaseConnection.setupDatabase("as", 1, "com.software.lienket.sqlitehelperlibrary.Test.Entity");
+        DatabaseConnection.setupDatabase("as", 2, "com.software.lienket.sqlitehelperlibrary.Test.Entity");
         DataAccessObject dao = DataAccessObject.getInstance();
         Product p = new Product();
         p.setPrice(1000);
@@ -43,7 +44,11 @@ public class MainActivity extends AppCompatActivity {
         detail.setProductId(p.getId());
         detail.setQuantity(123);
         dao.insert(detail);
-        Query query = dao.createQuery(Product.class);
-        Log.e("asdas", ((Product) query.findById(p.getId())).getProductName());
+        Query query = dao.createQuery(Abc.class);
+        Abc abc = new Abc();
+        abc.setTest("ádad");
+        dao.insert(abc);
+//        Log.e("asdas", ((Product) query.findById(p.getId())).getProductName());
+        Log.e("asdas", ((Abc) query.findById(abc.getId())).getTest());
     }
 }

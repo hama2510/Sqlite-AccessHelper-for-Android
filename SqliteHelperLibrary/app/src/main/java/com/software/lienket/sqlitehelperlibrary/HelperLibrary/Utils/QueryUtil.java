@@ -17,11 +17,7 @@ public class QueryUtil {
     private Entity entity;
 
     public QueryUtil(Class clazz) {
-        try {
-            entity = EntityUtil.getInstance().getEntity(clazz);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        entity = EntityUtil.getInstance().getEntity(clazz);
     }
 
     public static ArrayList<String> createTable(ArrayList<Class> classes) {
@@ -45,10 +41,6 @@ public class QueryUtil {
             for (int j = 0; j < length; j++) {
                 if (!ClassUtil.isExisted(created, e.getBelongsTo().get(j))) {
                     list.addAll(create(classes, created, e.getBelongsTo().get(j)));
-//                    if(ClassUtil.isExisted(created, e.getBelongsTo().get(j)))
-//                    list.add(createTablesHasForeignKey(EntityUtil.getInstance().getEntity(e.getBelongsTo().get(j))));
-//                    created.add(clazz);
-//                    classes.remove(clazz);
                 }
             }
             list.add(createTablesHasForeignKey(e));
