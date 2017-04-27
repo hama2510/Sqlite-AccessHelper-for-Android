@@ -76,4 +76,13 @@ public class Entity {
     public void setCreated(boolean created) {
         this.created = created;
     }
+
+    public ArrayList<Class> getBelongsTo() {
+        ArrayList<Class> classes = new ArrayList<>();
+        for (EntityColumn item : columns) {
+            if (item.getBelongsTo() != null)
+                classes.add(item.getBelongsTo());
+        }
+        return classes;
+    }
 }

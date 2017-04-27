@@ -9,7 +9,6 @@ import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Excecption.NoAcces
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Excecption.NotEntityException;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Object.Entity;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Object.EntityColumn;
-import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Object.GraphEntity;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -64,44 +63,6 @@ public class EntityUtil<T> {
         }
     }
 
-    public ArrayList<GraphEntity> getEntities(ArrayList<Class> classes) {
-        ArrayList<GraphEntity> entities = new ArrayList<>();
-        int size = classes.size();
-        Class clazz;
-        for (int i = 0; i < size; i++) {
-            clazz = classes.get(i);
-            if (isEntity(clazz)) {
-                Entity entity = getTableInfo(clazz);
-                ArrayList<EntityColumn> columns = new ArrayList<>();
-                Field[] fields = clazz.getDeclaredFields();
-                for (Field f : fields) {
-                    EntityColumn column = new EntityColumn();
-                    if (f.isAnnotationPresent(Column.class)) {
-                        column.setName(f.getAnnotation(Column.class).name());
-                        column.setDataType(f.getType());
-                        column.setFieldType(f.getAnnotation(Column.class).fieldType());
-                        if (f.isAnnotationPresent(Id.class)) {
-                            column.setId(true);
-                        }
-                        if (f.isAnnotationPresent(BelongsTo.class)) {
-                            column.setBelongsTo(f.getAnnotation(BelongsTo.class).entity());
-                            column.setUpdateAction(f.getAnnotation(BelongsTo.class).updateAction());
-                            column.setDeleteAction(f.getAnnotation(BelongsTo.class).deleteAction());
-                        }
-                    }
-                    columns.add(column);
-                }
-                entity.setColumns(columns);
-                entity.setClazz(clazz);
-//                entities.add(entity);
-                classes.remove(clazz);
-            } else {
-                throw new NotEntityException(clazz.getName());
-            }
-        }
-        return entities;
-    }
-
     public Entity getEntity(T obj) {
         Class clazz = obj.getClass();
         if (isEntity(clazz)) {
@@ -124,7 +85,7 @@ public class EntityUtil<T> {
                 column.setId(true);
             }
             if (f.isAnnotationPresent(BelongsTo.class)) {
-                column.setBelongsTo(f.getAnnotation(BelongsTo.class).entity());
+                column.setBelongsTo(f.getAnnotation(BelongsTo.class).table());
                 column.setUpdateAction(f.getAnnotation(BelongsTo.class).updateAction());
                 column.setDeleteAction(f.getAnnotation(BelongsTo.class).deleteAction());
             }

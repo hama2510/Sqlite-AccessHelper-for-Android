@@ -1,13 +1,11 @@
 package com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils;
 
-import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Object.EntityColumn;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Object.Entity;
+import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Object.EntityColumn;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -26,26 +24,36 @@ public class QueryUtil {
         }
     }
 
-    public static ArrayList<String> createTable(ArrayList<Entity> entities) {
+    public static ArrayList<String> createTable(ArrayList<Class> classes) {
         ArrayList<String> list = new ArrayList<>();
-        Iterator iterator = entities.iterator();
-        Entity e;
-        String tmp;
-        ArrayList<Entity> created = new ArrayList<>();
-        while (iterator.hasNext()) {
-            e = (Entity) iterator.next();
-            tmp = createTableHasNoForeignKey(e);
-            if (tmp != null) {
-                list.add(tmp);
-                created.add(e);
-                entities.remove(e);
-//                iterator.remove();
-            }
+        ArrayList<Class> created = new ArrayList<>();
+        while (!classes.isEmpty()) {
+            list.addAll(create(classes, created, classes.get(0)));
         }
-        iterator = entities.iterator();
-        while (iterator.hasNext()) {
-            tableHasForeignKey((Entity) iterator.next(), created)
-            list.add();
+        return list;
+    }
+
+    private static ArrayList<String> create(ArrayList<Class> classes, ArrayList<Class> created, Class clazz) {
+        ArrayList<String> list = new ArrayList<>();
+        Entity e = EntityUtil.getInstance().getEntity(clazz);
+        int length = e.getBelongsTo().size();
+        if (length == 0) {
+            created.add(clazz);
+            classes.remove(clazz);
+            list.add(createTableHasNoForeignKey(e));
+        } else {
+            for (int j = 0; j < length; j++) {
+                if (!ClassUtil.isExisted(created, e.getBelongsTo().get(j))) {
+                    list.addAll(create(classes, created, e.getBelongsTo().get(j)));
+//                    if(ClassUtil.isExisted(created, e.getBelongsTo().get(j)))
+//                    list.add(createTablesHasForeignKey(EntityUtil.getInstance().getEntity(e.getBelongsTo().get(j))));
+//                    created.add(clazz);
+//                    classes.remove(clazz);
+                }
+            }
+            list.add(createTablesHasForeignKey(e));
+            created.add(clazz);
+            classes.remove(clazz);
         }
         return list;
     }
@@ -89,51 +97,7 @@ public class QueryUtil {
         return sql;
     }
 
-//    private static String tableHasForeignKey(Entity entity,  ArrayList<Entity> created) {
-//        String sql = "CREATE TABLE " + entity.getTableName() + " (";
-//        int length = entity.getColumns().size();
-//        Class tmp;
-////        Entity e;
-//        for (int i = 0; i < length; i++) {
-//            sql += entity.getColumns().get(i).getName();
-//            sql += " " + StringUtil.getDatabaseType(entity.getColumns().get(i).getDataType());
-//            sql += " " + entity.getColumns().get(i).getFieldType();
-//            tmp = entity.getColumns().get(i).getBelongsTo();
-//            if (tmp != null) {
-//
-////                e = EntityUtil.getInstance().getEntity(tmp);
-//                sql += " REFERENCES " + e.getTableName() + "(" + e.getIds().get(0).getName() + ")"
-//                        + " ON UPDATE " + entity.getColumns().get(i).getUpdateAction()
-//                        + " ON DELETE " + entity.getColumns().get(i).getDeleteAction();
-//            }
-//            if (i < length - 1) {
-//                sql += ", ";
-//            }
-//        }
-//        ArrayList<EntityColumn> ids = entity.getIds();
-//        int size = ids.size();
-//        if (size > 0) {
-//            if (size == 1) {
-//                sql += ", PRIMARY KEY (" + ids.get(0).getName();
-//                if (entity.isAi())
-//                    sql += " AUTOINCREMENT";
-//                sql += ")";
-//            } else {
-//                sql += ", PRIMARY KEY (";
-//                for (int i = 0; i < size; i++) {
-//                    sql += ids.get(i).getName();
-//                    if (i < size - 1)
-//                        sql += ", ";
-//                }
-//                sql += ")";
-//            }
-//        }
-//        sql += ")";
-//        Log.e("sql", sql);
-//        return sql;
-//    }
-
-    private static String tableHasForeignKey(Entity entity) {
+    private static String createTablesHasForeignKey(Entity entity) {
         String sql = "CREATE TABLE " + entity.getTableName() + " (";
         int length = entity.getColumns().size();
         Class tmp;
@@ -176,24 +140,16 @@ public class QueryUtil {
         return sql;
     }
 
-    public static ArrayList<String> deleteTable(ArrayList<Entity> entities) {
-        ArrayList<String> ls = new ArrayList<>();
-        for (Entity item : entities) {
-            ls.add("DROP TABLE IF EXISTS " + item.getTableName());
-        }
-        return ls;
-    }
-
-    public String findSql() {
-        return "SELECT * from " + entity.getTableName() + "WHERE " + whereClause();
+    public String deleteTable() {
+        return "DROP TABLE IF EXISTS " + entity.getTableName();
     }
 
     public String findAllSql() {
         return "SELECT * from " + entity.getTableName();
     }
 
-    public String findByIdSql() {
-        String sql = findAllSql() + whereClause();
+    public String findSql() {
+        String sql = findAllSql() + " WHERE " + whereClause();
         return sql;
     }
 

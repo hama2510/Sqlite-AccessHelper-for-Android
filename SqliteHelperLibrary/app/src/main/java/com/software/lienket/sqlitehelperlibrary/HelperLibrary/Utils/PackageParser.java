@@ -1,20 +1,9 @@
 package com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Object.Entity;
-
-import org.reflections.Reflections;
-
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
 
 import dalvik.system.DexFile;
 import dalvik.system.PathClassLoader;
@@ -43,13 +32,13 @@ public class PackageParser {
 
     public static PackageParser getInstance() {
         if (instance == null)
-            throw new RuntimeException("PackageParser need init to use!");
+            throw new RuntimeException("PackageParser need initialize to use");
         return instance;
     }
 
     /**
      * @param packageName name of the package where you store entity classes
-     * @return
+     * @return list entities
      */
     public ArrayList<Class> getClasses(String packageName) {
         ArrayList<Class> classes = new ArrayList<>();
@@ -71,17 +60,6 @@ public class PackageParser {
         return classes;
     }
 
-    /**
-     * @param classes list all entity classes
-     * @return a graph of list entities
-     */
-    public ArrayList<Entity> getEntities(ArrayList<Class> classes) {
-        ArrayList<Entity> entities = new ArrayList<>();
-        for (Class item : classes) {
-            entities.add(EntityUtil.getInstance().getEntity(item));
-        }
-    }
-
     private boolean isTargetClassName(String className) {
         return className.startsWith(context.getPackageName()) && !className.contains("$");
     }
@@ -90,7 +68,4 @@ public class PackageParser {
         return className.contains(packageName);
 
     }
-//    public static void main(String[] args) {
-//        PackageParser.getInstance().getAllFilesInPackage("Persistent").get(0);
-//    }
 }

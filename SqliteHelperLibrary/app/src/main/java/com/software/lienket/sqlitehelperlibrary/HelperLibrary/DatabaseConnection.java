@@ -3,13 +3,9 @@ package com.software.lienket.sqlitehelperlibrary.HelperLibrary;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
-import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Excecption.NotEntityException;
-import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Object.Entity;
-import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils.QueryUtil;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils.PackageParser;
-import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils.EntityUtil;
+import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils.QueryUtil;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils.StringUtil;
 
 import java.util.ArrayList;
@@ -23,7 +19,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
     private static String databaseName;
     private static DatabaseConnection connection;
     private static Context context;
-    private static ArrayList<Entity> entities = new ArrayList<>();
+    private static ArrayList<Class> classes = new ArrayList<>();
 
     private DatabaseConnection(Context context) {
         super(context, databaseName, null, version);
@@ -50,15 +46,8 @@ public class DatabaseConnection extends SQLiteOpenHelper {
             PackageParser.init(context);
             DatabaseConnection.databaseName = databaseName;
             DatabaseConnection.version = version;
-            ArrayList<Class> classes = PackageParser.getInstance().getEntities(packageName);
-            for (Class item : classes) {
-                if (EntityUtil.getInstance().isEntity(item))
-                    entities.add(EntityUtil.getInstance().getEntity(item));
-                else {
-                    throw new NotEntityException(item.getName());
-                }
-            }
-            if (entities.isEmpty())
+            classes = PackageParser.getInstance().getClasses(packageName);
+            if (classes.isEmpty())
                 throw new RuntimeException("Package contains persistent objects cannot be blank");
             connection = new DatabaseConnection(context);
         }
@@ -72,7 +61,7 @@ public class DatabaseConnection extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        ArrayList<String> ls = QueryUtil.createTable(entities);
+        ArrayList<String> ls = QueryUtil.createTable(classes);
         for (String item : ls) {
             db.execSQL(item);
         }
@@ -80,8 +69,13 @@ public class DatabaseConnection extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        ArrayList<String> ls = QueryUtil.deleteTable(entities);
-        ls.addAll(QueryUtil.createTable(entities));
+        QueryUtil queryUtil;
+        for (Class item : classes) {
+            queryUtil = new QueryUtil(item);
+            db.execSQL(queryUtil.deleteTable());
+        }
+        ArrayList<String> ls = new ArrayList<>();
+        ls.addAll(QueryUtil.createTable(classes));
         for (String item : ls) {
             db.execSQL(item);
         }

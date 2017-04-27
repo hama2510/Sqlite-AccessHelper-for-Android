@@ -31,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
         p.setProductName("abc");
         dao.insert(p);
         User user = new User();
-        user.setPassword("asdasd");
-        user.setUsername("Asdasd");
+        user.setPassword("asdas2d1");
+        user.setUsername("Asdasd12");
         dao.insert(user);
         Order order = new Order();
         order.setDate("Asdsa");
@@ -43,5 +43,7 @@ public class MainActivity extends AppCompatActivity {
         detail.setProductId(p.getId());
         detail.setQuantity(123);
         dao.insert(detail);
+        Query query = dao.createQuery(Product.class);
+        Log.e("asdas", ((Product) query.findById(p.getId())).getProductName());
     }
 }

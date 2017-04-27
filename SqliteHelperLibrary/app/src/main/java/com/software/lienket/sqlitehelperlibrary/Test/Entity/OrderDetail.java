@@ -15,12 +15,12 @@ import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Annotation.Table;
 public class OrderDetail {
     @Id
     @Column(name = "product_id")
-    @BelongsTo(table = "products")
+    @BelongsTo(table = Product.class)
     private Integer productId;
 
     @Id
     @Column(name = "order_id")
-    @BelongsTo(table = "orders")
+    @BelongsTo(table = Order.class)
     private Integer orderId;
 
     @Column(name = "quantity")

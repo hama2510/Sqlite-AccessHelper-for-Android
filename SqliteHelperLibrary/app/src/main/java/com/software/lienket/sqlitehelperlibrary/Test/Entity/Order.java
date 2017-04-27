@@ -19,7 +19,7 @@ public class Order {
     @Column(name = "id")
     private Integer id;
     @Column(name = "user_id")
-    @BelongsTo(table = "users")
+    @BelongsTo(table = User.class)
     private Integer userId;
     @Column(name = "date")
     private String date;

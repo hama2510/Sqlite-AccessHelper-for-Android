@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BelongsTo {
-    public Class entity();
+    public Class table();
 
     public String updateAction() default ActionType.RESTRICT;
 

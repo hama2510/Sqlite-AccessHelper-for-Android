@@ -1,10 +1,12 @@
 package com.software.lienket.sqlitehelperlibrary.HelperLibrary;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Annotation.Column;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Excecption.NotMatchException;
+import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils.EntityUtil;
 import com.software.lienket.sqlitehelperlibrary.HelperLibrary.Utils.QueryUtil;
 
 import java.lang.reflect.Field;
@@ -55,6 +57,19 @@ public class Query<T> {
         db.close();
         return ls;
     }
+
+    public T findById(T id) {
+        SQLiteDatabase db = connection.getReadableDatabase();
+        Cursor cursor = db.rawQuery(queryUtil.findSql(), new String[]{String.valueOf(id)});
+        T result = null;
+        if (cursor.moveToFirst()) {
+            result = mapper(cursor, clazz);
+        }
+        cursor.close();
+        db.close();
+        return result;
+    }
+
 
     private T mapper(Cursor cursor, Class clazz) {
         T result = null;
