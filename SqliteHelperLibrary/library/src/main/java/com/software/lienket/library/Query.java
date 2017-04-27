@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.software.lienket.library.annotation.Column;
 import com.software.lienket.library.exception.NotMatchException;
 import com.software.lienket.library.utils.QueryUtil;
+import com.software.lienket.library.utils.SqliteOpenHelperUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ public class Query<T> {
     private static DatabaseConnection connection;
     private Class clazz;
     private QueryUtil queryUtil;
+    private SQLiteDatabase db;
+    private Cursor cursor;
 
 
     private Query(DatabaseConnection connection, Class clazz) {
@@ -40,76 +43,47 @@ public class Query<T> {
         return new Query(connection, clazz);
     }
 
+    private void closeConnection() {
+        if (db != null)
+            db.close();
+        if (cursor != null)
+            cursor.close();
+    }
+
     public ArrayList<T> findAll() {
         ArrayList<T> ls = new ArrayList<>();
-        SQLiteDatabase db = connection.getReadableDatabase();
-        Cursor cursor = db.rawQuery(queryUtil.findAllSql(), null);
+        db = connection.getReadableDatabase();
+        cursor = db.rawQuery(queryUtil.findAllSql(), null);
         if (cursor.moveToFirst()) {
             do {
-                T result = mapper(cursor, clazz);
+                T result = (T) SqliteOpenHelperUtil.getInstance().mapper(cursor, clazz);
                 if (result != null)
                     ls.add(result);
             } while (cursor.moveToNext());
         }
-        cursor.close();
-        db.close();
+        closeConnection();
         return ls;
     }
 
     public T findById(T id) {
-        SQLiteDatabase db = connection.getReadableDatabase();
-        Cursor cursor = db.rawQuery(queryUtil.findSql(), new String[]{String.valueOf(id)});
+        db = connection.getReadableDatabase();
+        cursor = db.rawQuery(queryUtil.findSql(), new String[]{String.valueOf(id)});
         T result = null;
         if (cursor.moveToFirst()) {
-            result = mapper(cursor, clazz);
+            result = (T) SqliteOpenHelperUtil.getInstance().mapper(cursor, clazz);
         }
-        cursor.close();
-        db.close();
+        closeConnection();
         return result;
     }
 
-
-    private T mapper(Cursor cursor, Class clazz) {
+    public T execute(String sql, String[] param) {
+        db = connection.getReadableDatabase();
+        cursor = db.rawQuery(queryUtil.findSql(), param);
         T result = null;
-        try {
-            result = (T) clazz.newInstance();
-            Field[] fields = clazz.getDeclaredFields();
-            Field f;
-            int length = fields.length;
-            int type;
-            int index;
-            for (int i = 0; i < length; i++) {
-                f = fields[i];
-                f.setAccessible(true);
-                index = cursor.getColumnIndex(f.getAnnotation(Column.class).name());
-                type = cursor.getType(index);
-                if (type == Cursor.FIELD_TYPE_INTEGER) {
-                    if (f.getType().equals(int.class) || f.getType().equals(Integer.class))
-                        f.set(result, cursor.getInt(index));
-                    else if (f.getType().equals(long.class) || f.getType().equals(Long.class))
-                        f.set(result, cursor.getLong(index));
-                    else
-                        throw new NotMatchException(f.getName(), f.getType().getName(),
-                                f.getAnnotation(Column.class).name(), "INTEGER");
-                } else if (type == Cursor.FIELD_TYPE_FLOAT) {
-                    if (f.getType().equals(float.class) || f.getType().equals(Float.class))
-                        f.set(result, cursor.getInt(index));
-                    else if (f.getType().equals(double.class) || f.getType().equals(Double.class))
-                        f.set(result, cursor.getLong(index));
-                    else
-                        throw new NotMatchException(f.getName(), f.getType().getName(),
-                                f.getAnnotation(Column.class).name(), "REAL");
-                } else if (type == Cursor.FIELD_TYPE_STRING) {
-                    if (f.getType().equals(String.class))
-                        f.set(result, cursor.getString(index));
-                    else
-                        throw new NotMatchException(f.getName(), f.getType().getName(),
-                                f.getAnnotation(Column.class).name(), "STRING");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (cursor.moveToFirst()) {
+            result = (T) SqliteOpenHelperUtil.getInstance().mapper(cursor, clazz);
         }
+        closeConnection();
         return result;
     }
 }
